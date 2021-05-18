@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "963592333616",
+    "project_id": "nmedia-89e7c",
+    "storage_bucket": "nmedia-89e7c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:963592333616:android:36cd0e3c5edc9b57e200f5",
+        "android_client_info": {
+          "package_name": "com.yoji.nmediaindustrial"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "963592333616-id22e02be2spvclv8q5dlaugimda05is.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAA4e9LXwuwruBmm_-LQ7NKC5JQezep7m0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "963592333616-id22e02be2spvclv8q5dlaugimda05is.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:963592333616:android:5cbd72cf88756bd8e200f5",
+        "android_client_info": {
+          "package_name": "ru.netology.nmedia"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "963592333616-id22e02be2spvclv8q5dlaugimda05is.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAA4e9LXwuwruBmm_-LQ7NKC5JQezep7m0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "963592333616-id22e02be2spvclv8q5dlaugimda05is.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
