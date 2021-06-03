@@ -76,22 +76,26 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         edited.value = edited.value?.copy(content = text)
     }
 
-    fun likeById(id: Long) {
+    fun likeById(id: Long, likedByMe: Boolean) {
         val old = _data.value?.posts.orEmpty()
 
         _data.postValue(
-            _data.value?.copy()
+            FeedModel(posts = _data.value?.posts.orEmpty().map {
+                if (it.id == id) {
+                    if (it.likedByMe) it.copy(likedByMe = !likedByMe,likes = it.likes-1)
+                    else it.copy(likedByMe = !likedByMe, likes = it.likes+1)
+                }
+                else it
+            })
         )
 
         repository.likeByIdAsync(object : LikeByIdCallback {
-            override fun onSuccess() {
-                loadPosts()
-            }
+            override fun onSuccess(post: Post) {}
 
             override fun onError(e: Exception) {
                 _data.postValue(_data.value?.copy(posts = old))
             }
-        }, id)
+        }, id, likedByMe)
     }
 
     fun removeById(id: Long) {
