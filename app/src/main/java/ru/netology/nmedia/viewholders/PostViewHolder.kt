@@ -1,9 +1,11 @@
 package ru.netology.nmedia.viewholders
 
 import android.annotation.SuppressLint
+import android.view.View
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
@@ -20,16 +22,36 @@ class PostViewHolder(
     fun bind(post: Post) {
         binding.apply {
             author.text = post.author
-            val url = "http://10.0.2.2:9999/avatars/${post.authorAvatar}"
+            val baseUrl = "http://10.0.2.2:9999"
+            val avatarUrl = "$baseUrl/avatars/${post.authorAvatar}"
             Glide
                 .with(avatar)
-                .load(url)
+                .load(avatarUrl)
                 .placeholder(R.drawable.ic_avatar_placeholder)
                 .error(R.drawable.ic_avatar_not_found)
                 .timeout(10_000)
+                .transition(DrawableTransitionOptions.withCrossFade())
                 .circleCrop()
                 .into(avatar)
 
+            with(post.attachment) {
+                if (this != null) {
+                    attachment.apply {
+                        visibility = View.VISIBLE
+                        contentDescription = description
+                        val imageUrl = "$baseUrl/images/$url"
+                        Glide
+                            .with(this)
+                            .load(imageUrl)
+                            .placeholder(R.drawable.ic_attachment_placeholder)
+                            .error(R.drawable.ic_attachment_not_found)
+                            .timeout(10_000)
+                            .fitCenter()
+                            .transition(DrawableTransitionOptions.withCrossFade())
+                            .into(this)
+                    }
+                } else attachment.visibility = View.GONE
+            }
             published.text = Date(post.published * 1000).toFormattedString()
             content.text = post.content
             // в адаптере
