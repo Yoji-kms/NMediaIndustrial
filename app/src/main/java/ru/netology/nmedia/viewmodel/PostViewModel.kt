@@ -2,10 +2,7 @@ package ru.netology.nmedia.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.*
-import ru.netology.nmedia.callbacks.GetAllCallback
-import ru.netology.nmedia.callbacks.LikeByIdCallback
-import ru.netology.nmedia.callbacks.RemoveByIdCallback
-import ru.netology.nmedia.callbacks.SaveCallback
+import ru.netology.nmedia.callbacks.RepositoryCallback
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.*
@@ -37,9 +34,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun loadPosts() {
         _data.postValue(FeedModel(loading = true))
-        repository.getAllAsync(object : GetAllCallback {
-            override fun onSuccess(posts: List<Post>) {
-                _data.postValue(FeedModel(posts = posts, empty = posts.isEmpty()))
+        repository.getAllAsync(object : RepositoryCallback<List<Post>> {
+            override fun onSuccess(result: List<Post>) {
+                _data.postValue(FeedModel(posts = result, empty = result.isEmpty()))
             }
 
             override fun onError(e: Exception) {
@@ -50,8 +47,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun save() {
         edited.value?.let {
-            repository.saveAsync(object : SaveCallback {
-                override fun onSuccess(post: Post) {
+            repository.saveAsync(object : RepositoryCallback<Post> {
+                override fun onSuccess(result: Post) {
                     _postCreated.postValue(Unit)
                 }
 
@@ -88,8 +85,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             })
         )
 
-        repository.likeByIdAsync(object : LikeByIdCallback {
-            override fun onSuccess(post: Post) {}
+        repository.likeByIdAsync(object : RepositoryCallback<Post> {
+            override fun onSuccess(result: Post) {}
 
             override fun onError(e: Exception) {
                 _data.postValue(_data.value?.copy(posts = old))
@@ -104,12 +101,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 .filter { it.id != id })
         )
 
-        repository.removeByIdAsync(object : RemoveByIdCallback {
-            override fun onSuccess() {}
-
+        repository.removeByIdAsync(object : RepositoryCallback<Unit> {
             override fun onError(e: Exception) {
                 _data.postValue(_data.value?.copy(posts = old))
             }
+
+            override fun onSuccess(result: Unit) {            }
         }, id)
     }
 }

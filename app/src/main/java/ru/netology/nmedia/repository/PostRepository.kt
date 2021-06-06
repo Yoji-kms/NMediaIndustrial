@@ -1,19 +1,11 @@
 package ru.netology.nmedia.repository
 
-import ru.netology.nmedia.callbacks.GetAllCallback
-import ru.netology.nmedia.callbacks.LikeByIdCallback
-import ru.netology.nmedia.callbacks.RemoveByIdCallback
-import ru.netology.nmedia.callbacks.SaveCallback
+import ru.netology.nmedia.callbacks.RepositoryCallback
 import ru.netology.nmedia.dto.Post
 
 interface PostRepository {
-    fun getAll(): List<Post>
-    fun likeById(id: Long)
-    fun save(post: Post)
-    fun removeById(id: Long)
-
-    fun getAllAsync(callback: GetAllCallback)
-    fun likeByIdAsync(callback: LikeByIdCallback, id: Long, likedByMe: Boolean)
-    fun saveAsync(callback: SaveCallback, post: Post)
-    fun removeByIdAsync(callback: RemoveByIdCallback, id: Long)
+    fun getAllAsync(callback: RepositoryCallback<List<Post>>)
+    fun likeByIdAsync(callback: RepositoryCallback<Post>, id: Long, likedByMe: Boolean)
+    fun saveAsync(callback: RepositoryCallback<Post>, post: Post)
+    fun removeByIdAsync(callback: RepositoryCallback<Unit>, id: Long)
 }
