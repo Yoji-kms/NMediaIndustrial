@@ -6,6 +6,7 @@ import android.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
@@ -22,8 +23,7 @@ class PostViewHolder(
     fun bind(post: Post) {
         binding.apply {
             author.text = post.author
-            val baseUrl = "http://10.0.2.2:9999"
-            val avatarUrl = "$baseUrl/avatars/${post.authorAvatar}"
+            val avatarUrl = "${BuildConfig.BASE_URL}/avatars/${post.authorAvatar}"
             Glide
                 .with(avatar)
                 .load(avatarUrl)
@@ -39,7 +39,7 @@ class PostViewHolder(
                     attachment.apply {
                         visibility = View.VISIBLE
                         contentDescription = description
-                        val imageUrl = "$baseUrl/images/$url"
+                        val imageUrl = "${BuildConfig.BASE_URL}/images/$url"
                         Glide
                             .with(this)
                             .load(imageUrl)
