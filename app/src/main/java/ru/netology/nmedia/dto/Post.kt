@@ -8,6 +8,7 @@ data class Post(
     val published: Long,
     val likedByMe: Boolean,
     val likes: Int = 0,
-    var attachment: Attachment? = null
+    val attachment: Attachment? = null,
+    val visible: Boolean = true,
+    val synced: Boolean = true
 )
-

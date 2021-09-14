@@ -2,116 +2,100 @@ package ru.netology.nmedia.repository
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
-import android.widget.Toast
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import ru.netology.nmedia.api.PostsApi
 import ru.netology.nmedia.application.App
 import ru.netology.nmedia.callbacks.*
+import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.entity.PostEntity
+import ru.netology.nmedia.entity.toDto
+import ru.netology.nmedia.entity.toEntity
+import ru.netology.nmedia.error.ApiError
+import ru.netology.nmedia.error.NetworkError
+import ru.netology.nmedia.error.UnknownError
+import java.io.IOException
+import kotlin.Exception
 
 
-class PostRepositoryImpl : PostRepository {
+class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
 
     companion object {
         @SuppressLint("StaticFieldLeak")
         val context: Context = App.appContext()
     }
 
+    override val data: LiveData<List<Post>> = dao.getAll().map(List<PostEntity>::toDto)
 
-    override fun getAllAsync(callback: RepositoryCallback<List<Post>>) {
-        PostsApi.retrofitService.getAll().enqueue(object : Callback<List<Post>> {
-            override fun onResponse(
-                call: Call<List<Post>>,
-                response: Response<List<Post>>
-            ) {
-
-                if (!response.isSuccessful) {
-                    Toast.makeText(context, response.message(), Toast.LENGTH_LONG).show()
-                    callback.onError(java.lang.RuntimeException(response.message()))
-                    return
-                }
-
-                callback.onSuccess(
-                    response.body() ?: throw java.lang.RuntimeException("body is null")
-                )
+    override suspend fun getAll() {
+        try {
+            val response = PostsApi.retrofitService.getAll()
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
             }
-
-            override fun onFailure(call: Call<List<Post>>, t: Throwable) {
-                if (t.message != null) Log.e("Error", t.message!!)
-            }
-
-        })
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            dao.insert(body.toEntity())
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
+        }
     }
 
-    override fun likeByIdAsync(callback: RepositoryCallback<Post>, id: Long, likedByMe: Boolean) {
-        val retrofitCallback: Callback<Post> = object : Callback<Post> {
-            override fun onResponse(
-                call: Call<Post>,
-                response: Response<Post>
-            ) {
-                if (!response.isSuccessful) {
-                    Toast.makeText(context, response.message(), Toast.LENGTH_LONG).show()
-                    callback.onError(java.lang.RuntimeException(response.message()))
-                    return
-                }
+    override suspend fun likeById(id: Long) {
+        try {
+            dao.likeById(id)
+            val likedByMe = getById(id).likedByMe
+            val response = if (!likedByMe) PostsApi.retrofitService.dislikeById(id)
+            else PostsApi.retrofitService.likeById(id)
 
-                callback.onSuccess(
-                    response.body() ?: throw java.lang.RuntimeException("Body is null")
-                )
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
             }
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
+        }
+    }
 
-            override fun onFailure(call: Call<Post>, t: Throwable) {
-                if (t.message != null) Log.e("Error", t.message!!)
+    override suspend fun save(post: Post): Long {
+        try {
+            val id = dao.save(PostEntity.fromDto(post))
+            val response = PostsApi.retrofitService.save(post.copy(synced = true))
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
             }
+//            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            return id
+//            dao.save(PostEntity.fromDto(body))
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
+        }
+    }
+
+    override suspend fun getById(id: Long): Post =
+        try {
+            dao.getById(id).toDto()
+        } catch (e: Exception) {
+            throw UnknownError
         }
 
-        if (likedByMe) PostsApi.retrofitService.dislikeById(id).enqueue(retrofitCallback)
-        else PostsApi.retrofitService.likeById(id).enqueue(retrofitCallback)
-    }
 
-    override fun saveAsync(callback: RepositoryCallback<Post>, post: Post) {
-        PostsApi.retrofitService.save(post).enqueue(object : Callback<Post> {
-            override fun onResponse(
-                call: Call<Post>,
-                response: Response<Post>
-            ) {
-                if (!response.isSuccessful) {
-                    Toast.makeText(context, response.message(), Toast.LENGTH_LONG).show()
-                    callback.onError(java.lang.RuntimeException(response.message()))
-                    return
-                }
-
-                callback.onSuccess(
-                    response.body() ?: throw java.lang.RuntimeException("Body is null")
-                )
+    override suspend fun removeById(id: Long) {
+        try {
+            dao.removeById(id)
+            val response = PostsApi.retrofitService.removeById(id)
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
             }
-
-            override fun onFailure(call: Call<Post>, t: Throwable) {
-                if (t.message != null) Log.e("Error", t.message!!)
-            }
-        })
-    }
-
-    override fun removeByIdAsync(callback: RepositoryCallback<Unit>, id: Long) {
-        PostsApi.retrofitService.removeById(id).enqueue(object : Callback<Unit> {
-            override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
-                if (!response.isSuccessful) {
-                    Toast.makeText(context, response.message(), Toast.LENGTH_LONG).show()
-                    callback.onError(java.lang.RuntimeException(response.message()))
-                    return
-                }
-
-                callback.onSuccess(
-                    response.body() ?: throw java.lang.RuntimeException("Body is null")
-                )
-            }
-
-            override fun onFailure(call: Call<Unit>, t: Throwable) {
-                if (t.message != null) Log.e("Error", t.message!!)
-            }
-        })
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
+        }
     }
 }
