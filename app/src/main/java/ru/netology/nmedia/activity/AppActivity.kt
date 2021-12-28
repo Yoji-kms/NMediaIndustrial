@@ -10,7 +10,6 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.installations.FirebaseInstallations
 import com.google.firebase.messaging.FirebaseMessaging
-import com.google.firebase.iid.*
 import ru.netology.nmedia.R
 import ru.netology.nmedia.fragments.NewPostFragment.Companion.textArg
 
@@ -50,7 +49,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                 return@with
             }
             if (isUserResolvableError(code)) {
-                getErrorDialog(this@AppActivity, code, 9000).show()
+                getErrorDialog(this@AppActivity, code, 9000)?.show()
                 return
             }
             Toast.makeText(this@AppActivity, R.string.google_play_unavailable, Toast.LENGTH_LONG)
