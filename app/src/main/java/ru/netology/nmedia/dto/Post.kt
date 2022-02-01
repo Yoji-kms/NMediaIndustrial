@@ -10,5 +10,5 @@ data class Post(
     val likes: Int = 0,
     val attachment: Attachment? = null,
     val visible: Boolean = true,
-    val synced: Boolean = true
+    val synced: Boolean = false
 )

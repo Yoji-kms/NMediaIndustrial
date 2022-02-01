@@ -54,9 +54,23 @@ class PostViewHolder(
             }
             published.text = Date(post.published * 1000).toFormattedString()
             content.text = post.content
-            // в адаптере
-            like.isChecked = post.likedByMe
-            like.text = "${post.likes}"
+
+            like.apply {
+                isEnabled = post.synced
+                isChecked = post.likedByMe
+                text = "${post.likes}"
+                setOnClickListener {
+                    onInteractionListener.onLike(post)
+                }
+            }
+            share.apply {
+                isEnabled = post.synced
+                setOnClickListener {
+                    onInteractionListener.onShare(post)
+                }
+            }
+
+            sync.isEnabled = post.synced
 
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {
@@ -76,14 +90,6 @@ class PostViewHolder(
                         }
                     }
                 }.show()
-            }
-
-            like.setOnClickListener {
-                onInteractionListener.onLike(post)
-            }
-
-            share.setOnClickListener {
-                onInteractionListener.onShare(post)
             }
         }
     }

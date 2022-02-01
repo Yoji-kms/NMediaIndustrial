@@ -14,7 +14,6 @@ import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
-import ru.netology.nmedia.enums.ActionType
 import ru.netology.nmedia.listeners.OnInteractionListener
 import ru.netology.nmedia.viewmodel.PostViewModel
 
@@ -57,7 +56,7 @@ class FeedFragment : Fragment() {
         })
 
         binding.list.adapter = adapter
-        viewModel.dataState.observe(viewLifecycleOwner, { state ->
+        viewModel.dataState.observe(viewLifecycleOwner) { state ->
             binding.progress.isVisible = state.loading
             binding.swiperefresh.isRefreshing = state.refreshing
             binding.errorGroup.isVisible = false
@@ -65,37 +64,48 @@ class FeedFragment : Fragment() {
                 Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
                     .setAction(R.string.retry_loading) { viewModel.loadPosts() }
                     .show()
-        })
-        viewModel.data.observe(viewLifecycleOwner, { state ->
+        }
+        viewModel.data.observe(viewLifecycleOwner) { state ->
             adapter.submitList(state.posts)
             binding.emptyText.isVisible = state.empty
-        })
-        viewModel.postChangedState.observe(viewLifecycleOwner, { state ->
-            if (state.failed)
-                when (state.actionType) {
-                    ActionType.LIKE -> Snackbar.make(
-                        binding.root,
-                        R.string.error_loading,
-                        Snackbar.LENGTH_LONG
-                    )
-                        .setAction(R.string.retry_loading) { viewModel.likeById(state.id) }
-                        .show()
-                    ActionType.REMOVE -> Snackbar.make(
-                        binding.root,
-                        R.string.error_loading,
-                        Snackbar.LENGTH_LONG
-                    )
-                        .setAction(R.string.retry_loading) { viewModel.removeById(state.id) }
-                        .show()
-                    ActionType.SAVE -> Snackbar.make(
-                        binding.root,
-                        R.string.error_loading,
-                        Snackbar.LENGTH_LONG
-                    )
-                        .setAction(R.string.retry_loading) { viewModel.save() }
-                        .show()
-                }
-        })
+        }
+//        viewModel.postChangedState.observe(viewLifecycleOwner, { state ->
+//            if (state.failed)
+//                when (state.actionType) {
+//                    ActionType.LIKE -> Snackbar.make(
+//                        binding.root,
+//                        R.string.error_loading,
+//                        Snackbar.LENGTH_LONG
+//                    )
+//                        .setAction(R.string.retry_loading) { viewModel.likeById(state.id) }
+//                        .show()
+//                    ActionType.REMOVE -> Snackbar.make(
+//                        binding.root,
+//                        R.string.error_loading,
+//                        Snackbar.LENGTH_LONG
+//                    )
+//                        .setAction(R.string.retry_loading) { viewModel.removeById(state.id) }
+//                        .show()
+//                    ActionType.SAVE -> Snackbar.make(
+//                        binding.root,
+//                        R.string.error_loading,
+//                        Snackbar.LENGTH_LONG
+//                    )
+//                        .setAction(R.string.retry_loading) { viewModel.save() }
+//                        .show()
+//                }
+//        })
+        viewModel.networkError.observe(viewLifecycleOwner) { state ->
+            if (state) {
+                Snackbar.make(
+                    binding.root,
+                    R.string.error_loading,
+                    Snackbar.LENGTH_LONG
+                )
+                    .setAction(R.string.retry_loading) { viewModel.refreshPosts() }
+                    .show()
+            }
+        }
 
         binding.retryButton.setOnClickListener {
             viewModel.loadPosts()

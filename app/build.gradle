@@ -4,13 +4,13 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'com.google.gms.google-services'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 32
     buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "ru.netology.nmedia"
         minSdkVersion 26
-        targetSdkVersion 31
+        targetSdkVersion 32
         versionCode 1
         versionName "1.0"
 
@@ -46,18 +46,18 @@ android {
 
 dependencies {
     def core_version = "1.7.0"
-    def appcompat_version = "1.4.0"
-    def constraintlayout_version = "2.1.2"
+    def appcompat_version = "1.4.1"
+    def constraintlayout_version = "2.1.3"
     def recyclerview_version = "1.2.1"
     def junit_version = "4.13.2"
     def ext_junit_version = "1.1.3"
     def espresso_core_version = "3.4.0"
     def activity_version = "1.4.0"
     def lifecycle_version = "2.4.0"
-    def mdc_version = "1.4.0"
+    def mdc_version = "1.5.0"
     def gson_version = '2.8.9'
-    def nav_version = "2.3.5"
-    def room_version = "2.4.0"
+    def nav_version = "2.4.0"
+    def room_version = "2.4.1"
     def firebase_version = "27.1.0"
     def okhttp_version = '5.0.0-alpha.3'
     def okhttploggin_version = '5.0.0-alpha.3'
@@ -68,6 +68,7 @@ dependencies {
     def retrofit_gson_version = "2.9.0"
     def coroutines_version = "1.5.0"
     def firebase_messaging_version = "23.0.0"
+    def work_manager_version = "2.7.1"
 
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "androidx.core:core-ktx:$core_version"
@@ -96,6 +97,7 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_gson_version"
     implementation "com.squareup.okhttp3:logging-interceptor:$okhttploggin_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
+    implementation "androidx.work:work-runtime-ktx:$work_manager_version"
 
     testImplementation "junit:junit:$junit_version"
     androidTestImplementation "androidx.test.ext:junit:$ext_junit_version"

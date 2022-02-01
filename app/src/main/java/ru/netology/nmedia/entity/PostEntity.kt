@@ -17,7 +17,7 @@ data class PostEntity(
     val likes: Int = 0,
     val attachment: Attachment? = null,
     val visible: Boolean = true,
-    val synced: Boolean = true
+    val synced: Boolean = false
 ) {
     fun toDto() = Post(
         id,

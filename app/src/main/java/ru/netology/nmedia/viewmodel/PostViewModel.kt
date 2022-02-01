@@ -20,7 +20,8 @@ private val empty = Post(
     authorAvatar = "",
     likedByMe = false,
     likes = 0,
-    published = 0L
+    published = 0L,
+    synced = false
 )
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
@@ -39,9 +40,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     val postCreated: LiveData<Unit>
         get() = _postCreated
 
-    private val _postChangedState = MutableLiveData<PostChangedState>()
-    val postChangedState: LiveData<PostChangedState>
-        get() = _postChangedState
+    private val _networkError = MutableLiveData<Boolean>()
+    val networkError: LiveData<Boolean>
+        get() = _networkError
+
+    private val postChangedStateList = mutableListOf<PostChangedState>()
 
     init {
         loadPosts()
@@ -50,14 +53,13 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun loadPosts() = viewModelScope.launch {
         try {
             _dataState.value = FeedModelState(loading = true, error = false)
-            with(_postChangedState.value) {
-                if (this?.failed == true) {
-                    when (this.actionType) {
-                        ActionType.LIKE -> likeById(this.id)
-                        ActionType.REMOVE -> removeById(this.id)
-                        ActionType.SAVE -> save()
+            if (_networkError.value == true) {
+//                viewModelScope.launch {
+                    postChangedStateList.forEach {
+                        repository.retry(it.actionType, it.id, it.newContent)
                     }
-                }
+                    postChangedStateList.clear()
+//                }
             }
 
             repository.getAll()
@@ -70,15 +72,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun refreshPosts() = viewModelScope.launch {
         try {
             _dataState.value = FeedModelState(refreshing = true, error = false)
-            with(_postChangedState.value) {
-                if (this?.failed == true) {
-                    when (this.actionType) {
-                        ActionType.LIKE -> likeById(this.id)
-                        ActionType.REMOVE -> removeById(this.id)
-                        ActionType.SAVE -> save()
+            if (_networkError.value == true) {
+                    postChangedStateList.forEach {
+                        repository.retry(it.actionType, it.id, it.newContent)
                     }
+                    postChangedStateList.clear()
                 }
-            }
 
             repository.getAll()
             _dataState.value = FeedModelState()
@@ -92,19 +91,17 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             _postCreated.value = Unit
             viewModelScope.launch {
                 try {
-                    val post = try {
-                        repository.getById(_postChangedState.value?.id ?: 0L)
-                    } catch (e: Exception) {
-                        it
-                    }
-                    _postChangedState.value =
-                        PostChangedState(actionType = ActionType.SAVE, failed = false)
-                    val id = repository.save(post)
-                    edited.value = post.copy(id = id)
+                    _networkError.value = false
+                    val id = repository.save(it)
+                    edited.value = it.copy(id = id)
                     _dataState.value = FeedModelState()
                 } catch (e: Exception) {
-                    _postChangedState.value =
-                        PostChangedState(id = it.id, actionType = ActionType.SAVE, failed = true)
+                    _networkError.value = true
+                    postChangedStateList.add(
+                        PostChangedState(
+                            id = it.id, actionType = ActionType.SAVE, newContent = it.content
+                        )
+                    )
                 }
             }
         }
@@ -125,23 +122,25 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun likeById(id: Long) = viewModelScope.launch {
         try {
-            _postChangedState.value =
-                PostChangedState(actionType = ActionType.LIKE, failed = false)
+            _networkError.value = false
             repository.likeById(id)
         } catch (e: Exception) {
-            _postChangedState.value =
-                PostChangedState(id = id, actionType = ActionType.LIKE, failed = true)
+            _networkError.value = true
+            postChangedStateList.add(
+                PostChangedState(id = id, actionType = ActionType.LIKE)
+            )
         }
     }
 
     fun removeById(id: Long) = viewModelScope.launch {
         try {
-            _postChangedState.value =
-                PostChangedState(actionType = ActionType.REMOVE, failed = false)
+            _networkError.value = false
             repository.removeById(id)
         } catch (e: Exception) {
-            _postChangedState.value =
-                PostChangedState(id = id, actionType = ActionType.REMOVE, failed = true)
+            _networkError.value = true
+            postChangedStateList.add(
+                PostChangedState(id = id, actionType = ActionType.REMOVE)
+            )
         }
     }
 }
