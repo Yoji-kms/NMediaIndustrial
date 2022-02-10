@@ -62,39 +62,13 @@ class FeedFragment : Fragment() {
             binding.errorGroup.isVisible = false
             if (state.error)
                 Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
-                    .setAction(R.string.retry_loading) { viewModel.loadPosts() }
+                    .setAction(R.string.retry_loading) { viewModel.refreshPosts() }
                     .show()
         }
         viewModel.data.observe(viewLifecycleOwner) { state ->
             adapter.submitList(state.posts)
             binding.emptyText.isVisible = state.empty
         }
-//        viewModel.postChangedState.observe(viewLifecycleOwner, { state ->
-//            if (state.failed)
-//                when (state.actionType) {
-//                    ActionType.LIKE -> Snackbar.make(
-//                        binding.root,
-//                        R.string.error_loading,
-//                        Snackbar.LENGTH_LONG
-//                    )
-//                        .setAction(R.string.retry_loading) { viewModel.likeById(state.id) }
-//                        .show()
-//                    ActionType.REMOVE -> Snackbar.make(
-//                        binding.root,
-//                        R.string.error_loading,
-//                        Snackbar.LENGTH_LONG
-//                    )
-//                        .setAction(R.string.retry_loading) { viewModel.removeById(state.id) }
-//                        .show()
-//                    ActionType.SAVE -> Snackbar.make(
-//                        binding.root,
-//                        R.string.error_loading,
-//                        Snackbar.LENGTH_LONG
-//                    )
-//                        .setAction(R.string.retry_loading) { viewModel.save() }
-//                        .show()
-//                }
-//        })
         viewModel.networkError.observe(viewLifecycleOwner) { state ->
             if (state) {
                 Snackbar.make(

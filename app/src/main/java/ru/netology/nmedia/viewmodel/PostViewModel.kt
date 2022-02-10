@@ -2,6 +2,8 @@ package ru.netology.nmedia.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.*
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
@@ -54,14 +56,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         try {
             _dataState.value = FeedModelState(loading = true, error = false)
             if (_networkError.value == true) {
-//                viewModelScope.launch {
-                    postChangedStateList.forEach {
-                        repository.retry(it.actionType, it.id, it.newContent)
-                    }
+                    postChangedStateList.map {
+                        async { repository.retry(it.actionType, it.id, it.newContent) }
+                    }.awaitAll()
                     postChangedStateList.clear()
-//                }
             }
-
             repository.getAll()
             _dataState.value = FeedModelState()
         } catch (e: Exception) {
@@ -73,12 +72,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         try {
             _dataState.value = FeedModelState(refreshing = true, error = false)
             if (_networkError.value == true) {
-                    postChangedStateList.forEach {
-                        repository.retry(it.actionType, it.id, it.newContent)
-                    }
+                    postChangedStateList.map {
+                        async { repository.retry(it.actionType, it.id, it.newContent) }
+                    }.awaitAll()
                     postChangedStateList.clear()
                 }
-
             repository.getAll()
             _dataState.value = FeedModelState()
         } catch (e: Exception) {
